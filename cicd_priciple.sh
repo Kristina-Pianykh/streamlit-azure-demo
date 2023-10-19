@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export (cat env | xargs)
+export $(cat env | xargs)
 SUBSCRIPTION_ID=$(az account show --query id --output tsv)
 SERVICE_PRINCIPAL_NAME="TerraformPrinciple"
 GROUP_ID=$(az group show --name $RESOURCE_GROUP --query id --output tsv)
