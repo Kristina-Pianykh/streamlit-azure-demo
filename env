@@ -1,4 +1,4 @@
-RESOURCE_GROUP_NAME=rg-streamlit-test
+RESOURCE_GROUP=rg-streamlit-test
 STORAGE_ACCOUNT_NAME=tfstate2755
 CONTAINER_NAME=tfstate
 LOCATION=northeurope
