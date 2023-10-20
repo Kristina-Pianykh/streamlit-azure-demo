@@ -15,7 +15,7 @@ terraform {
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
   }
-  required_version = ">= 1.6.2, < 2.0.0"
+  required_version = ">= 1.6.0, < 2.0.0"
 }
 
 provider "azurerm" {
