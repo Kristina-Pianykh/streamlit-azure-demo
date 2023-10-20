@@ -92,6 +92,7 @@ resource "azurerm_container_group" "container" {
 #       site_config.0.application_stack.0.docker_registry_url
 #     ]
 #   }
+# depends_on = [azurerm_app_service_plan.asp]
 # }
 
 # resource "azurerm_user_assigned_identity" "id" {
