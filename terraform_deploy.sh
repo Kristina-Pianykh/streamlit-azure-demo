@@ -22,20 +22,13 @@ terraform_deploy() {
     terraform -chdir=src/terraform apply plan.out
 }
 
-push_image() {
-    docker image build -t $IMAGE_NAME .
-    docker tag $IMAGE_NAME streamlittoyappacr.azurecr.io/${IMAGE_NAME}
-    az acr login --name $ACR_NAME
-    docker push streamlittoyappacr.azurecr.io/${IMAGE_NAME}
-}
+terraform_deploy
 
-push_image
-
-if [ $? -eq 0 ]; then
-    echo "Docker images pushed successfully. Proceeding to terraform deploy..."
-    terraform_deploy
-    echo "Terraform deployment completed."
-else
-    echo "Docker image push failed. Exiting..."
-    exit 1
-fi
+# if [ $? -eq 0 ]; then
+#     echo "Docker images pushed successfully. Proceeding to terraform deploy..."
+#     terraform_deploy
+#     echo "Terraform deployment completed."
+# else
+#     echo "Docker image push failed. Exiting..."
+#     exit 1
+# fi
