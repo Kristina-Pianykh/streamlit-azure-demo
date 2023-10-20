@@ -1,0 +1,54 @@
+---
+# Deployment Workflow
+name: deploy
+
+on:
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    Deploy:
+        name: Deploy
+        runs-on: ubuntu-latest
+        needs: [pre-commit]
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v2
+
+            - name: Set Environment Variables
+              run: |
+                  export $(cat env | xargs)
+                  ACR_NAME="${PROJECT_NAME}acr"
+                  IMAGE_NAME="${PROJECT_NAME}-image"
+
+                  echo "ACR_NAME=$ACR_NAME" >> $GITHUB_ENV
+                  echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+                  echo "RESOURCE_GROUP=$RESOURCE_GROUP" >> $GITHUB_ENV
+                  echo "STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME" >> $GITHUB_ENV
+                  echo "CONTAINER_NAME=$CONTAINER_NAME" >> $GITHUB_ENV
+                  echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
+                  echo "LOCATION=$LOCATION" >> $GITHUB_ENV
+
+            - name: azure-login
+              uses: azure/login@v1
+              with:
+                  creds: '${{ secrets.AZURE_CREDENTIALS }}'
+
+            - name: acr-login
+              uses: azure/docker-login@v1
+              with:
+                  login-server: streamlittoyappacr.azurecr.io
+                  username: ${{ secrets.ACR_USERNAME }}
+                  password: ${{ secrets.ACR_PASSWORD }}
+
+            - name: Destroy Terraform
+              env:
+                  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+                  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+                  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+                  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+              run: |
+                  ./terraform_deploy.sh
