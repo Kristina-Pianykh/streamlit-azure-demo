@@ -17,6 +17,10 @@ env:
         ~/.local
         ~/.cache/pre-commit
 
+permissions:
+    id-token: write
+    contents: read
+
 jobs:
     pre-commit:
         name: pre-commit
