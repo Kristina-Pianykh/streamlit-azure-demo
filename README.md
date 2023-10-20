@@ -2,7 +2,7 @@
 
 A toy infrastructure on Azure for hosting a publicly accessible streamlit Web application.
 
-This repository leverages GitHub Actions for the automatically deployment of a containerized streamlit application on Azure. This includes:
+This includes:
 
 * **Formatting Checks** to ensure code quality by running formatting checks
 * **Docker Image Building**
