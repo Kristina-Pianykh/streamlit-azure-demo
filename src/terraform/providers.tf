@@ -4,21 +4,26 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~>3.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~>3.5.1"
+    }
   }
   backend "azurerm" {
-      resource_group_name  = "${var.resource_group_name_prefix}-streamlit-test"
-      storage_account_name = "<storage_account_name>"
-      container_name       = "tfstate"
-      key                  = "terraform.tfstate"
+    resource_group_name  = "${var.resource_group_name_prefix}-streamlit-test"
+    storage_account_name = "<storage_account_name>"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate"
   }
+  required_version = ">= 1.3.6, < 2.0.0"
 }
 
 provider "azurerm" {
   features {}
-  subscription_id   = var.subscription_id
-  tenant_id         = var.tenant_id
-  client_id         = var.client_id
-  client_secret     = var.client_secret
+  subscription_id = var.subscription_id
+  tenant_id       = var.tenant_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
 }
 
 # Generate a random integer to create a globally unique name

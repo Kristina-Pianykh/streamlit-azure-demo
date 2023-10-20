@@ -4,11 +4,11 @@ resource "azurerm_resource_group" "rg" {
 }
 
 resource "azurerm_container_registry" "acr" {
-  name                = "${var.project_name}acr"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = var.resource_group_location
-  sku                 = "Basic"
-  admin_enabled       = true
+  name                          = "${var.project_name}acr"
+  resource_group_name           = azurerm_resource_group.rg.name
+  location                      = var.resource_group_location
+  sku                           = "Basic"
+  admin_enabled                 = true
   public_network_access_enabled = true
 }
 
@@ -21,8 +21,8 @@ resource "azurerm_container_group" "container" {
   restart_policy      = var.restart_policy
 
   exposed_port {
-      port     = var.port
-      protocol = "TCP"
+    port     = var.port
+    protocol = "TCP"
   }
 
   image_registry_credential {
@@ -61,7 +61,7 @@ resource "azurerm_container_group" "container" {
 #   resource_group_name   = azurerm_resource_group.rg.name
 #   service_plan_id       = azurerm_service_plan.appserviceplan.id
 #   https_only            = true
-#   site_config { 
+#   site_config {
 #     minimum_tls_version = "1.2"
 #     # always_on             = false
 #     container_registry_use_managed_identity = true

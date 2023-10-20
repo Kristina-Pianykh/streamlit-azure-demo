@@ -19,13 +19,13 @@ az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME --role Owner --scope $GR
 # --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP"
 
 # get details on the role
-# az role definition list --name "Custom Contributor" 
+# az role definition list --name "Custom Contributor"
 
 # create a role from local json file
 # az role definition create --role-definition custom_contributor_role.json --subscription $SUBSCRIPTION_ID
 
 # unasign role from principle
-# az role assignment delete --assignee $principle_id --role "Custom Contributor" --resource-group $RESOURCE_GROUP 
+# az role assignment delete --assignee $principle_id --role "Custom Contributor" --resource-group $RESOURCE_GROUP
 
 # delete role
 # role_name=$(az role definition list --name "Contributor" | jq -r '.[].name')
