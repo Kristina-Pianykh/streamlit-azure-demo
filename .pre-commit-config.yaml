@@ -14,16 +14,16 @@ repos:
           - id: detect-aws-credentials
           - id: detect-private-key
           - id: check-json
-    - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-      rev: 0.2.3
-      hooks:
-          - id: yamlfmt
+    # - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    #   rev: 0.2.3
+    #   hooks:
+    #       - id: yamlfmt
     - repo: https://github.com/adrienverge/yamllint
       rev: v1.32.0
       hooks:
           - id: yamllint
             name: Check yaml files with yamllint
-            entry: yamllint --strict .
+            entry: yamllint -c .github/linters/.yaml-lint.yml --strict .
             types: [yaml]
     - repo: https://github.com/antonbabenko/pre-commit-terraform
       rev: v1.83.5

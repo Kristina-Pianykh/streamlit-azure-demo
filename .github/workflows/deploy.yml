@@ -1,0 +1,142 @@
+---
+# Deployment Workflow
+name: deploy
+
+on:
+    workflow_dispatch:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+env:
+    PYTHON_VERSION: '3.9'
+    POETRY_VERSION: '1.4.2'
+    CACHE_PATHS: |
+        .venv
+        ~/.local
+        ~/.cache/pre-commit
+
+jobs:
+    pre-commit:
+        name: pre-commit
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: actions/setup-python@v4
+              id: setup-python
+              with:
+                  python-version: ${{ env.PYTHON_VERSION }}
+            - name: Restore cache
+              id: restore-cache
+              uses: actions/cache/restore@v3
+              with:
+                  path: ${{ env.CACHE_PATHS }}
+                  key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}-poetry-${{ env.POETRY_VERSION }}
+            - uses: snok/install-poetry@v1
+              id: install-poetry
+              if: steps.restore-cache.outputs.cache-hit != 'true'
+              with:
+                  virtualenvs-create: true
+                  virtualenvs-in-project: true
+                  installer-parallel: true
+            - name: Install PY dependencies
+              id: install-py-dependencies
+              if: steps.restore-cache.outputs.cache-hit != 'true'
+              run: poetry install --no-interaction --no-root
+            - name: Install pre-commit hooks
+              id: install-pre-commit-hooks
+              if: steps.restore-cache.outputs.cache-hit != 'true'
+              run: |
+                  source .venv/bin/activate
+                  pre-commit install-hooks
+            - uses: actions/cache/save@v3
+              if: |
+                  steps.install-poetry.outcome == 'success' &&
+                  steps.install-py-dependencies.outcome == 'success' &&
+                  steps.install-pre-commit-hooks.outcome == 'success'
+              with:
+                  path: ${{ env.CACHE_PATHS }}
+                  key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+            - name: Setup TFLint
+              id: setup-tflint
+              uses: terraform-linters/setup-tflint@v4
+              with:
+                  tflint_version: v0.44.1
+            - name: Get changed files
+              id: changed-files
+              uses: tj-actions/changed-files@v39
+            - name: List all changed files
+              run: |
+                  for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+                      echo "$file was changed"
+                  done
+            - name: Run pre-commit
+              env:
+                  HOOKS_TO_SKIP: sqlfluff-fix,sqlfluff-lint,terraform_fmt,terrascan
+              run: |
+                  source .venv/bin/activate
+                  SKIP=$HOOKS_TO_SKIP pre-commit run --files ${{ steps.changed-files.outputs.all_changed_files }}
+    Deploy:
+        name: Deploy
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v2
+
+            - name: Set Environment Variables
+              run: |
+                  export $(cat env | xargs)
+                  ACR_NAME="${PROJECT_NAME}acr"
+                  IMAGE_NAME="${PROJECT_NAME}-image"
+
+                  echo "ACR_NAME=$ACR_NAME" >> $GITHUB_ENV
+                  echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+                  echo "RESOURCE_GROUP=$RESOURCE_GROUP" >> $GITHUB_ENV
+                  echo "STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME" >> $GITHUB_ENV
+                  echo "CONTAINER_NAME=$CONTAINER_NAME" >> $GITHUB_ENV
+                  echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
+                  echo "LOCATION=$LOCATION" >> $GITHUB_ENV
+
+            - name: azure-login
+              uses: azure/login@v1
+              with:
+                  client-id: ${{ secrets.ARM_CLIENT_ID }}
+                  tenant-id: ${{ secrets.ARM_TENANT_ID }}
+                  subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+            - name: acr-login
+              uses: azure/docker-login@v1
+              with:
+                  login-server: streamlittoyappacr.azurecr.io
+                  username: ${{ secrets.ACR_USERNAME }}
+                  password: ${{ secrets.ACR_PASSWORD }}
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
+
+            - name: Cache Docker layers
+              uses: actions/cache@v3
+              with:
+                  path: /tmp/.buildx-cache
+                  key: ${{ runner.os }}-buildx-${{ github.sha }}
+                  restore-keys: |
+                      ${{ runner.os }}-buildx-
+
+            - name: Build docker
+              uses: docker/build-push-action@v4
+              with:
+                  context: .
+                  file: Dockerfile
+                  push: true
+                  tags: |
+                      ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+                  labels: repository=${{ github.repository }} gh_job=${{ github.job }}
+                  cache-from: type=local,src=/tmp/.buildx-cache
+                  cache-to: type=local,dest=/tmp/.buildx-cache
+
+            - name: Deploy Terraform
+              run: |
+                  ./terraform_deploy.sh
