@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~>3.5.1"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2.1"
+    }
   }
   backend "azurerm" {
     resource_group_name  = "${var.resource_group_name_prefix}-streamlit-test"

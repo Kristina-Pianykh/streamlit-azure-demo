@@ -10,6 +10,20 @@ resource "azurerm_container_registry" "acr" {
   sku                           = "Basic"
   admin_enabled                 = true
   public_network_access_enabled = true
+
+}
+
+resource "null_resource" "docker_push" {
+  triggers = {
+    email_list_sha = sha256(timestamp())
+  }
+  depends_on = [azurerm_container_registry.acr]
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      ./push_docker.sh
+    EOT
+  }
 }
 
 resource "azurerm_container_group" "container" {
@@ -45,7 +59,7 @@ resource "azurerm_container_group" "container" {
 }
 
 
-# Create the Linux App Service Plan
+# # Create the Linux App Service Plan
 # resource "azurerm_service_plan" "appserviceplan" {
 #   name                = "webapp-asp-${var.project_name}"
 #   location            = var.resource_group_location
@@ -54,7 +68,7 @@ resource "azurerm_container_group" "container" {
 #   sku_name            = "B1" # Free tier
 # }
 
-# Create the web app, pass in the App Service Plan ID
+# # Create the web app, pass in the App Service Plan ID
 # resource "azurerm_linux_web_app" "webapp" {
 #   name                  = "webapp-${var.project_name}"
 #   location              = var.resource_group_location
@@ -64,8 +78,8 @@ resource "azurerm_container_group" "container" {
 #   site_config {
 #     minimum_tls_version = "1.2"
 #     # always_on             = false
-#     container_registry_use_managed_identity = true
-#     container_registry_managed_identity_client_id = azurerm_user_assigned_identity.id.client_id
+#     # container_registry_use_managed_identity = true
+#     # container_registry_managed_identity_client_id = azurerm_user_assigned_identity.id.client_id
 #     application_stack {
 #       docker_image_name = "${azurerm_container_registry.acr.name}.azurecr.io/${var.image_name}:latest"
 #       docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
