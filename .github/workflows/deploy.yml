@@ -120,6 +120,15 @@ jobs:
                   username: ${{ secrets.ACR_USERNAME }}
                   password: ${{ secrets.ACR_PASSWORD }}
 
+            - name: Deploy Terraform
+              env:
+                  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+                  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+                  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+                  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+              run: |
+                  ./terraform_deploy.sh
+
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v2
 
@@ -142,12 +151,3 @@ jobs:
                   labels: repository=${{ github.repository }} gh_job=${{ github.job }}
                   cache-from: type=local,src=/tmp/.buildx-cache
                   cache-to: type=local,dest=/tmp/.buildx-cache
-
-            - name: Deploy Terraform
-              env:
-                  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-                  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-                  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-                  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-              run: |
-                  ./terraform_deploy.sh
