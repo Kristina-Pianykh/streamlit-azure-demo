@@ -3,7 +3,7 @@
 default_stages: [commit, push]
 default_language_version:
     python: python3.10
-exclude: (.venv/*)
+exclude: ^\.venv/
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v4.5.0
