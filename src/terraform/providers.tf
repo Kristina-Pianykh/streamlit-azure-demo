@@ -15,4 +15,14 @@ terraform {
 
 provider "azurerm" {
   features {}
+  subscription_id   = var.subscription_id
+  tenant_id         = var.tenant_id
+  client_id         = var.client_id
+  client_secret     = var.client_secret
+}
+
+# Generate a random integer to create a globally unique name
+resource "random_integer" "ri" {
+  min = 10000
+  max = 99999
 }
