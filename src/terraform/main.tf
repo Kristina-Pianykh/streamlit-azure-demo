@@ -77,23 +77,36 @@ resource "azurerm_container_group" "container" {
 #   https_only            = true
 #   site_config {
 #     minimum_tls_version = "1.2"
+#     # linux_fx_version   = "DOCKER|${azurerm_container_registry.acr.login_server}/${var.image_name}:latest"
+#     health_check_path = "/health"
 #     # always_on             = false
 #     # container_registry_use_managed_identity = true
 #     # container_registry_managed_identity_client_id = azurerm_user_assigned_identity.id.client_id
 #     application_stack {
-#       docker_image_name = "${azurerm_container_registry.acr.name}.azurecr.io/${var.image_name}:latest"
+#       docker_image_name = "${azurerm_container_registry.acr.login_server}/${var.image_name}:latest"
 #       docker_registry_url = "https://${azurerm_container_registry.acr.login_server}"
 #       docker_registry_username = azurerm_container_registry.acr.admin_username
 #       docker_registry_password = azurerm_container_registry.acr.admin_password
 #     }
 #   }
-#   lifecycle {
-#     ignore_changes = [
-#       site_config.0.application_stack.0.docker_registry_url
-#     ]
+#   # lifecycle {
+#   #   ignore_changes = [
+#   #     # site_config.0.application_stack.0.docker_registry_url
+#   #     site_config.0.linux_fx_version
+#   #   ]
+#   # }
+#   identity {
+#    type         = "SystemAssigned, UserAssigned"
+#    identity_ids = [azurerm_user_assigned_identity.id.id]
 #   }
-# depends_on = [azurerm_app_service_plan.asp]
+#   app_settings = {
+#     "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
+#     "DOCKER_REGISTRY_SERVER_URL" = azurerm_container_registry.acr.login_server
+#     "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.acr.admin_username
+
+#   }
 # }
+
 
 # resource "azurerm_user_assigned_identity" "id" {
 #   resource_group_name = azurerm_resource_group.rg.name
