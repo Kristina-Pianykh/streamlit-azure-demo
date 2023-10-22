@@ -32,12 +32,12 @@ jobs:
                   echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
                   echo "LOCATION=$LOCATION" >> $GITHUB_ENV
 
-            - name: azure-login
+            - name: Azure Login
               uses: azure/login@v1
               with:
                   creds: '${{ secrets.AZURE_CREDENTIALS }}'
 
-            - name: acr-login
+            - name: ACR Login
               uses: azure/docker-login@v1
               with:
                   login-server: streamlittoyappacr.azurecr.io
@@ -51,4 +51,4 @@ jobs:
                   ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
                   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
               run: |
-                  ./terraform_deploy.sh
+                  ./terraform_destroy.sh
