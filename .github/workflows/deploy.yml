@@ -105,10 +105,6 @@ jobs:
                   echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
                   echo "LOCATION=$LOCATION" >> $GITHUB_ENV
 
-            - name: Terraform Bootstrap
-              run: |
-                  ./terraform_backend.sh env
-
             - name: Azure Login
               uses: azure/login@v1
               with:
