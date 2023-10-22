@@ -4,6 +4,7 @@ export $(cat env | xargs)
 ACR_NAME="${PROJECT_NAME}acr"
 IMAGE_NAME="${PROJECT_NAME}-image"
 export TF_VAR_image_name="${IMAGE_NAME}"
+export TF_VAR_resource_group_location="${LOCATION}"
 
 # terraform authentication with Azure
 export TF_VAR_subscription_id="${ARM_SUBSCRIPTION_ID}"
