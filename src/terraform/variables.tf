@@ -33,35 +33,35 @@ variable "client_secret" {
   type = string
 }
 
-variable "container_group_name_prefix" {
-  type        = string
-  description = "Prefix of the container group name that's combined with a random value so name is unique in your Azure subscription."
-  default     = "acigroup"
-}
+# variable "container_group_name_prefix" {
+#   type        = string
+#   description = "Prefix of the container group name that's combined with a random value so name is unique in your Azure subscription."
+#   default     = "acigroup"
+# }
 
-variable "container_name_prefix" {
-  type        = string
-  description = "Prefix of the container name that's combined with a random value so name is unique in your Azure subscription."
-  default     = "aci"
-}
+# variable "container_name_prefix" {
+#   type        = string
+#   description = "Prefix of the container name that's combined with a random value so name is unique in your Azure subscription."
+#   default     = "aci"
+# }
 
-variable "port" {
-  type        = number
-  description = "Port to open on the container and the public IP address."
-  default     = 8501
-}
+# variable "port" {
+#   type        = number
+#   description = "Port to open on the container and the public IP address."
+#   default     = 80
+# }
 
-variable "cpu_cores" {
-  type        = number
-  description = "The number of CPU cores to allocate to the container."
-  default     = 1
-}
+# variable "cpu_cores" {
+#   type        = number
+#   description = "The number of CPU cores to allocate to the container."
+#   default     = 1
+# }
 
-variable "memory_in_gb" {
-  type        = number
-  description = "The amount of memory to allocate to the container in gigabytes."
-  default     = 2
-}
+# variable "memory_in_gb" {
+#   type        = number
+#   description = "The amount of memory to allocate to the container in gigabytes."
+#   default     = 2
+# }
 
 variable "restart_policy" {
   type        = string
