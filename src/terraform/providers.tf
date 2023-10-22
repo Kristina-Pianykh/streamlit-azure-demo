@@ -13,12 +13,7 @@ terraform {
       version = "~> 3.2.1"
     }
   }
-  backend "azurerm" {
-    # resource_group_name  = "rg-streamlit-test"
-    # storage_account_name = "tfstate2755"
-    # container_name       = "tfstate"
-    # key                  = "terraform.tfstate"
-  }
+  backend "azurerm" {}
   required_version = ">= 1.6.0, < 2.0.0"
 }
 
