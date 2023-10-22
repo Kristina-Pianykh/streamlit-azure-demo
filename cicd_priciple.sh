@@ -6,7 +6,8 @@ SERVICE_PRINCIPAL_NAME="CICDPrinciple"
 GROUP_ID=$(az group show --name $RESOURCE_GROUP --query id --output tsv)
 export MSYS_NO_PATHCONV=1
 
-az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME --role Owner --scope $GROUP_ID --sdk-auth
+echo "Creating service principle..."
+az ad sp create-for-rbac --name $SERVICE_PRINCIPAL_NAME --role Owner --scopes $GROUP_ID --sdk-auth
 
 # create a custom role and assign it to the service principle
 # az role definition create --role-definition custom_contributor_role.json
