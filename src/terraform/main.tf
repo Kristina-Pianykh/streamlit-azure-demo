@@ -1,11 +1,10 @@
-resource "azurerm_resource_group" "rg" {
-  location = var.resource_group_location
-  name     = "${var.resource_group_name_prefix}-streamlit-test"
+data "azurerm_resource_group" "rg" {
+  name = "${var.resource_group_name_prefix}-streamlit-test"
 }
 
 resource "azurerm_container_registry" "acr" {
   name                          = "${var.project_name}acr"
-  resource_group_name           = azurerm_resource_group.rg.name
+  resource_group_name           = data.azurerm_resource_group.rg.name
   location                      = var.resource_group_location
   sku                           = "Basic"
   admin_enabled                 = true
@@ -13,18 +12,18 @@ resource "azurerm_container_registry" "acr" {
 
 }
 
-resource "null_resource" "docker_push" {
-  triggers = {
-    email_list_sha = sha256(timestamp())
-  }
-  depends_on = [azurerm_container_registry.acr]
+# resource "null_resource" "docker_push" {
+#   triggers = {
+#     email_list_sha = sha256(timestamp())
+#   }
+#   depends_on = [azurerm_container_registry.acr]
 
-  provisioner "local-exec" {
-    command = <<-EOT
-      ./push_docker.sh
-    EOT
-  }
-}
+#   provisioner "local-exec" {
+#     command = <<-EOT
+#       ./push_docker.sh
+#     EOT
+#   }
+# }
 
 # resource "azurerm_container_group" "container" {
 #   name                = "${var.container_group_name_prefix}-${var.project_name}"
@@ -63,7 +62,7 @@ resource "null_resource" "docker_push" {
 resource "azurerm_service_plan" "appserviceplan" {
   name                = "webapp-asp-${var.project_name}"
   location            = var.resource_group_location
-  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg.name
   os_type             = "Linux"
   sku_name            = "B1" # Free tier
 }
@@ -72,16 +71,12 @@ resource "azurerm_service_plan" "appserviceplan" {
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${var.project_name}"
   location            = var.resource_group_location
-  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg.name
   service_plan_id     = azurerm_service_plan.appserviceplan.id
   https_only          = true
   site_config {
     minimum_tls_version = "1.2"
-    # linux_fx_version   = "DOCKER|${azurerm_container_registry.acr.login_server}/${var.image_name}:latest"
-    health_check_path = "/health"
-    # always_on             = false
-    # container_registry_use_managed_identity = true
-    # container_registry_managed_identity_client_id = azurerm_user_assigned_identity.id.client_id
+    health_check_path   = "/health"
     application_stack {
       docker_image_name        = "${var.image_name}:latest"
       docker_registry_url      = "https://${azurerm_container_registry.acr.login_server}"
@@ -89,15 +84,8 @@ resource "azurerm_linux_web_app" "webapp" {
       docker_registry_password = azurerm_container_registry.acr.admin_password
     }
   }
-  # lifecycle {
-  #   ignore_changes = [
-  #     # site_config.0.application_stack.0.docker_registry_url
-  #     site_config.0.linux_fx_version
-  #   ]
-  # }
   identity {
     type = "SystemAssigned"
-    #  identity_ids = [azurerm_user_assigned_identity.id.id]
   }
   app_settings = {
     "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
