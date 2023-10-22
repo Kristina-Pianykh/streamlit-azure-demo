@@ -14,10 +14,10 @@ terraform {
     }
   }
   backend "azurerm" {
-    resource_group_name  = "${var.resource_group_name_prefix}-streamlit-test"
-    storage_account_name = "<storage_account_name>"
-    container_name       = "tfstate"
-    key                  = "terraform.tfstate"
+    # resource_group_name  = "rg-streamlit-test"
+    # storage_account_name = "tfstate2755"
+    # container_name       = "tfstate"
+    # key                  = "terraform.tfstate"
   }
   required_version = ">= 1.6.0, < 2.0.0"
 }

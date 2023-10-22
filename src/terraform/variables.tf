@@ -1,7 +1,5 @@
 variable "resource_group_location" {
-  type        = string
-  default     = "northeurope"
-  description = "Location of the resource group."
+  type = string
 }
 
 variable "resource_group_name_prefix" {
