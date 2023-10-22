@@ -9,22 +9,62 @@ resource "azurerm_container_registry" "acr" {
   sku                           = "Basic"
   admin_enabled                 = true
   public_network_access_enabled = true
-
 }
 
-# resource "null_resource" "docker_push" {
-#   triggers = {
-#     email_list_sha = sha256(timestamp())
-#   }
-#   depends_on = [azurerm_container_registry.acr]
+locals {
+  new_image_tag = replace(timestamp(), "/[- TZ:]/", "")
+}
 
-#   provisioner "local-exec" {
-#     command = <<-EOT
-#       ./push_docker.sh
-#     EOT
-#   }
-# }
+resource "null_resource" "docker_push" {
+  triggers = {
+    new_image_tag = sha256(local.new_image_tag)
+  }
+  depends_on = [azurerm_container_registry.acr]
 
+  provisioner "local-exec" {
+    command = <<-EOT
+      ./push_docker.sh "${local.new_image_tag}"
+    EOT
+  }
+}
+
+# Web App Setup
+resource "azurerm_service_plan" "appserviceplan" {
+  name                = "webapp-asp-${var.project_name}"
+  location            = var.resource_group_location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  os_type             = "Linux"
+  sku_name            = "B1" # Free tier
+}
+
+resource "azurerm_linux_web_app" "webapp" {
+  name                = "webapp-${var.project_name}"
+  location            = var.resource_group_location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  service_plan_id     = azurerm_service_plan.appserviceplan.id
+  https_only          = true
+  site_config {
+    minimum_tls_version = "1.2"
+    health_check_path   = "/health"
+    application_stack {
+      docker_image_name        = "${var.image_name}:${local.new_image_tag}"
+      docker_registry_url      = "https://${azurerm_container_registry.acr.login_server}"
+      docker_registry_username = azurerm_container_registry.acr.admin_username
+      docker_registry_password = azurerm_container_registry.acr.admin_password
+    }
+  }
+  identity {
+    type = "SystemAssigned"
+  }
+  app_settings = {
+    "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
+    "DOCKER_REGISTRY_SERVER_URL"      = azurerm_container_registry.acr.login_server
+    "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.acr.admin_username
+
+  }
+}
+
+# Azure Container Instance Setup
 # resource "azurerm_container_group" "container" {
 #   name                = "${var.container_group_name_prefix}-${var.project_name}"
 #   location            = var.resource_group_location
@@ -56,45 +96,6 @@ resource "azurerm_container_registry" "acr" {
 #     }
 #   }
 # }
-
-
-# Create the Linux App Service Plan
-resource "azurerm_service_plan" "appserviceplan" {
-  name                = "webapp-asp-${var.project_name}"
-  location            = var.resource_group_location
-  resource_group_name = data.azurerm_resource_group.rg.name
-  os_type             = "Linux"
-  sku_name            = "B1" # Free tier
-}
-
-# Create the web app, pass in the App Service Plan ID
-resource "azurerm_linux_web_app" "webapp" {
-  name                = "webapp-${var.project_name}"
-  location            = var.resource_group_location
-  resource_group_name = data.azurerm_resource_group.rg.name
-  service_plan_id     = azurerm_service_plan.appserviceplan.id
-  https_only          = true
-  site_config {
-    minimum_tls_version = "1.2"
-    health_check_path   = "/health"
-    application_stack {
-      docker_image_name        = "${var.image_name}:latest"
-      docker_registry_url      = "https://${azurerm_container_registry.acr.login_server}"
-      docker_registry_username = azurerm_container_registry.acr.admin_username
-      docker_registry_password = azurerm_container_registry.acr.admin_password
-    }
-  }
-  identity {
-    type = "SystemAssigned"
-  }
-  app_settings = {
-    "DOCKER_REGISTRY_SERVER_PASSWORD" = azurerm_container_registry.acr.admin_password
-    "DOCKER_REGISTRY_SERVER_URL"      = azurerm_container_registry.acr.login_server
-    "DOCKER_REGISTRY_SERVER_USERNAME" = azurerm_container_registry.acr.admin_username
-
-  }
-}
-
 
 # resource "azurerm_user_assigned_identity" "id" {
 #   resource_group_name = azurerm_resource_group.rg.name
