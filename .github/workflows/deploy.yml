@@ -108,7 +108,9 @@ jobs:
             - name: Azure Login
               uses: azure/login@v1
               with:
-                  creds: '${{ secrets.AZURE_CREDENTIALS }}'
+                  client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
             - name: ACR Login
               uses: azure/docker-login@v1
@@ -117,11 +119,11 @@ jobs:
                   username: ${{ secrets.ACR_USERNAME }}
                   password: ${{ secrets.ACR_PASSWORD }}
 
-            - name: Deploy Terraform
-              env:
-                  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-                  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-                  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-                  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-              run: |
-                  ./terraform_deploy.sh
+            # - name: Deploy Terraform
+            #   env:
+            #       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+            #       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+            #       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+            #       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+            #   run: |
+            #       ./terraform_deploy.sh
