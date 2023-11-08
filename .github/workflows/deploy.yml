@@ -33,7 +33,7 @@ jobs:
               uses: actions/checkout@v4
 
             - id: pre-commit
-              uses: Kristina-Pianykh/poetry-pre-commit-cache@v1
+              uses: Kristina-Pianykh/poetry-pre-commit-cache@main
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
                   poetry-version: ${{ env.POETRY_VERSION }}
