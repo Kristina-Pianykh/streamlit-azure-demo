@@ -16,6 +16,9 @@ env:
         .venv
         ~/.local
         ~/.cache/pre-commit
+    ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
 permissions:
     id-token: write
@@ -91,24 +94,12 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@v2
 
-            - name: Set Environment Variables
-              run: |
-                  export $(cat env | xargs)
-                  ACR_NAME="${PROJECT_NAME}acr"
-                  IMAGE_NAME="${PROJECT_NAME}-image"
-
-                  echo "ACR_NAME=$ACR_NAME" >> $GITHUB_ENV
-                  echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-                  echo "RESOURCE_GROUP=$RESOURCE_GROUP" >> $GITHUB_ENV
-                  echo "STORAGE_ACCOUNT_NAME=$STORAGE_ACCOUNT_NAME" >> $GITHUB_ENV
-                  echo "CONTAINER_NAME=$CONTAINER_NAME" >> $GITHUB_ENV
-                  echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
-                  echo "LOCATION=$LOCATION" >> $GITHUB_ENV
-
             - name: Azure Login
               uses: azure/login@v1
               with:
-                  creds: '${{ secrets.AZURE_CREDENTIALS }}'
+                  client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
             - name: ACR Login
               uses: azure/docker-login@v1
@@ -118,10 +109,5 @@ jobs:
                   password: ${{ secrets.ACR_PASSWORD }}
 
             - name: Deploy Terraform
-              env:
-                  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-                  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-                  ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-                  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
               run: |
                   ./terraform_deploy.sh

@@ -29,8 +29,21 @@ variable "client_id" {
   type = string
 }
 
-variable "client_secret" {
+# variable "client_secret" {
+#   type = string
+# }
+
+variable "storage_account_name" {
   type = string
+}
+
+variable "storage_container_name" {
+  type = string
+}
+
+variable "tf_state_key" {
+  type    = string
+  default = "tfstate"
 }
 
 # Azure Container Instance Setup
