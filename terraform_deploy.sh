@@ -23,7 +23,7 @@ terraform_deploy() {
     terraform -chdir=src/terraform apply plan.out
 }
 
-./terraform_backend
+./terraform_backend.sh
 terraform_deploy
 
 # if [ $? -eq 0 ]; then
