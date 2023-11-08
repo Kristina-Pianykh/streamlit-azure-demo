@@ -13,7 +13,13 @@ terraform {
       version = "~> 3.2.1"
     }
   }
-  backend "azurerm" {}
+  backend "azurerm" {
+    resource_group_name  = var.resource_group_name
+    storage_account_name = var.storage_account_name
+    container_name       = var.storage_container_name
+    key                  = var.tf_state_key
+    use_oidc             = true
+  }
   required_version = ">= 1.6.0, < 2.0.0"
 }
 
