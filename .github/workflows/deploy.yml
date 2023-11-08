@@ -33,7 +33,7 @@ jobs:
               uses: actions/checkout@v4
 
             - id: pre-commit
-              uses: actions/poetry-pre-commit-cached@v1
+              uses: actions/poetry-pre-commit-cache@v1
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
                   poetry-version: ${{ env.POETRY_VERSION }}
