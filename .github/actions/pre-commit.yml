@@ -1,0 +1,96 @@
+name: 'pre-commit'
+description: 'Setting up poetry for installing Python dependencies and running pre-commit on changed files'
+inputs:
+  python-version:  # id of input
+    required: true
+    default: '3.9'
+  poetry-version:  # id of input
+    required: true
+    default: '1.4.2'
+  hooks-to-skip:
+    required: false
+    default: ''
+  cache-paths:
+    required: true
+    default: |
+        .venv
+        ~/.local
+        ~/.cache/pre-commit
+  tflint-version:
+    required: true
+    default: v0.44.1
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+runs:
+  using: "composite"
+  steps:
+    - id: random-number-generator
+      run: echo "random-number=$(echo $RANDOM)" >> $GITHUB_OUTPUT
+      shell: bash
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v4
+      id: setup-python
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Restore cache
+      id: restore-cache
+      uses: actions/cache/restore@v3
+      with:
+        path: ${{ inputs.cache-paths }}
+        key: |
+          venv-\
+          ${{ runner.os }}-\
+          ${{ steps.setup-python.outputs.python-version }}-\
+          ${{ hashFiles('**/poetry.lock') }}-\
+          pre-commit-\
+          ${{ hashFiles('.pre-commit-config.yaml') }}-\
+          poetry-\
+          ${{ inputs.poetry-version }}
+    - uses: snok/install-poetry@v1
+      id: install-poetry
+      if: steps.restore-cache.outputs.cache-hit != 'true'
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+    - name: Install PY dependencies
+      id: install-py-dependencies
+      if: steps.restore-cache.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --no-root
+    - name: Install pre-commit hooks
+      id: install-pre-commit-hooks
+      if: steps.restore-cache.outputs.cache-hit != 'true'
+      run: |
+          source .venv/bin/activate
+          pre-commit install-hooks
+    - uses: actions/cache/save@v3
+      if: |
+          steps.install-poetry.outcome == 'success' &&
+          steps.install-py-dependencies.outcome == 'success' &&
+          steps.install-pre-commit-hooks.outcome == 'success'
+      with:
+        path: ${{ env.CACHE_PATHS }}
+        key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+    - name: Setup TFLint
+      id: setup-tflint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: ${{ inputs.tflint-version }}
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v39
+    - name: List all changed files
+      run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+              echo "$file was changed"
+          done
+    - name: Run pre-commit
+      env:
+        HOOKS_TO_SKIP: ${{ inputs.hooks-to-skip }}
+      run: |
+          source .venv/bin/activate
+          SKIP=$HOOKS_TO_SKIP pre-commit run --files ${{ steps.changed-files.outputs.all_changed_files }}
