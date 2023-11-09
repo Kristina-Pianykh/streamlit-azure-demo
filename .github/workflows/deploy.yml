@@ -12,6 +12,7 @@ on:
 env:
     PYTHON_VERSION: '3.9'
     POETRY_VERSION: '1.4.2'
+    TFLINT_VERSION: 'v0.48.0'
     CACHE_PATHS: |
         .venv
         ~/.local
@@ -35,10 +36,11 @@ jobs:
                   fetch-depth: 0
 
             - id: pre-commit
-              uses: Kristina-Pianykh/poetry-pre-commit-cache@main
+              uses: Kristina-Pianykh/poetry-pre-commit-cache@v1.0
               with:
                   python-version: ${{ env.PYTHON_VERSION }}
                   poetry-version: ${{ env.POETRY_VERSION }}
+                  tflint-version: ${{ env.TFLINT_VERSION }}
                   cache-paths: ${{ env.CACHE_PATHS }}
 
             - name: Azure Login
