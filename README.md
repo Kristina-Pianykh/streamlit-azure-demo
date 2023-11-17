@@ -1,9 +1,5 @@
 # streamlit-azure-demo
 
-[![deploy](https://github.com/Kristina-Pianykh/streamlit-azure-demo/actions/workflows/deploy.yml/badge.svg)](https://github.com/Kristina-Pianykh/streamlit-azure-demo/actions/workflows/deploy.yml)
-
-[![destroy](https://github.com/Kristina-Pianykh/streamlit-azure-demo/actions/workflows/destroy.yml/badge.svg)](https://github.com/Kristina-Pianykh/streamlit-azure-demo/actions/workflows/destroy.yml)
-
 ## Description
 
 A toy infrastructure on Azure for hosting a publicly accessible streamlit Web application. Once the infrastructure is deployed ([see the instructions below](#deployment-and-destrution)), the app is available at https://webapp-streamlittoyapp.azurewebsites.net/
