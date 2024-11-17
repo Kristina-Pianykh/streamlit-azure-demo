@@ -1,6 +1,9 @@
 import streamlit as st
+import time
+import json
 import pandas as pd
 import numpy as np
+import requests
 
 
 st.title('Uber pickups in NYC')
@@ -33,3 +36,11 @@ st.subheader('Number of pickups by hour')
 hist_values = np.histogram(
     data[DATE_COLUMN].dt.hour, bins=24, range=(0,24))[0]
 st.bar_chart(hist_values)
+
+
+cnt = 0
+while True:
+    status = requests.post('https://test-vnet-st-server.azurewebsites.net', data=json.dumps({'Message': f'Hello from Streamlit {cnt}!'}))
+    st.write(status.status_code)
+    cnt += 1
+    time.sleep(5)
